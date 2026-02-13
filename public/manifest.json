@@ -4,7 +4,7 @@
   "description": "A private YouTube video player with a classic interface",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F0F0F",
+  "background_color": "#181818",
   "theme_color": "#181818",
   "orientation": "any",
   "icons": [
