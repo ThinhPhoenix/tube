@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import YouTube from 'react-youtube';
+import { useHaptics } from 'waheim-haptics';
 
 interface VideoInfo {
   videoId: string;
@@ -83,6 +84,7 @@ function saveWatchedVideo(video: VideoInfo) {
 
 export function SearchTab({ onVideoSelect }: SearchTabProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const triggerHaptics = useHaptics();
   const [input, setInput] = useState('');
   const [results, setResults] = useState<VideoInfo[]>([]);
   const [recommended, setRecommended] = useState<VideoInfo[]>([]);
@@ -160,6 +162,7 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
   };
 
   const handleVideoClick = (video: VideoInfo) => {
+    triggerHaptics();
     saveWatchedVideo(video);
     setCurrentVideo(video);
     onVideoSelect(video);
@@ -312,7 +315,10 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
             <p className="channel-name">{currentVideo.authorName}</p>
           </div>
           <button
-            onClick={() => navigate(`/playing?id=${currentVideo.videoId}`)}
+            onClick={() => {
+              triggerHaptics();
+              navigate(`/playing?id=${currentVideo.videoId}`);
+            }}
             style={{
               background: '#FFFFFF',
               color: '#000000',

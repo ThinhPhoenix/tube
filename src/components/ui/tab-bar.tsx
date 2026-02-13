@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useHaptics } from 'waheim-haptics';
 
 const tabStyle: React.CSSProperties = {
   flex: 1,
@@ -20,6 +21,7 @@ const activeTabStyle: React.CSSProperties = {
 };
 
 export function TabBar() {
+  const triggerHaptics = useHaptics();
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
 
   useEffect(() => {
@@ -51,6 +53,7 @@ export function TabBar() {
     }}>
       <NavLink
         to="/"
+        onClick={() => triggerHaptics()}
         style={({ isActive }) => ({
           ...tabStyle,
           ...(isActive ? activeTabStyle : {}),
@@ -61,6 +64,7 @@ export function TabBar() {
       
       <NavLink
         to="/playing"
+        onClick={() => triggerHaptics()}
         style={({ isActive }) => ({
           ...tabStyle,
           ...(isActive ? activeTabStyle : {}),

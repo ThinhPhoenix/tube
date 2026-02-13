@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import YouTube from 'react-youtube';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useHaptics } from 'waheim-haptics';
 
 interface VideoInfo {
   videoId: string;
@@ -80,6 +81,7 @@ async function fetchRelatedVideos(videoId: string, page: number = 0): Promise<Vi
 export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const triggerHaptics = useHaptics();
   const [urlVideo, setUrlVideo] = useState<VideoInfo | null>(null);
   const [relatedVideos, setRelatedVideos] = useState<VideoInfo[]>([]);
   const [page, setPage] = useState(0);
@@ -118,6 +120,7 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
   };
 
   const handleRelatedVideoClick = (relatedVideo: VideoInfo) => {
+    triggerHaptics();
     clearAutoPlayTimer();
     onVideoSelect(relatedVideo);
     navigate(`/playing?id=${relatedVideo.videoId}`);
@@ -246,7 +249,10 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
     >
       {isLandscape && (
         <button
-          onClick={() => navigate('/')}
+          onClick={() => {
+            triggerHaptics();
+            navigate('/');
+          }}
           style={{
             position: 'absolute',
             top: 'var(--spacing-sm)',
