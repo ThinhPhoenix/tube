@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import YouTube from 'react-youtube';
 
 interface VideoInfo {
   videoId: string;
   title: string;
   thumbnail: string;
+  authorName?: string;
 }
 
 interface NowPlayingTabProps {
@@ -37,6 +39,7 @@ async function fetchRelatedVideos(videoId: string, page: number = 0): Promise<Vi
             videoId: vid,
             title: data.title || 'YouTube Video',
             thumbnail: `https://img.youtube.com/vi/${vid}/hqdefault.jpg`,
+            authorName: data.author_name,
           };
         } catch {
           return {
@@ -147,19 +150,22 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
           aspectRatio: '16/9',
           background: '#000',
         }}>
-          <iframe
-            width="100%"
-            height="100%"
-            src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&vq=hd1080`}
-            title={video.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
+          <YouTube
+            videoId={video.videoId}
+            opts={{
+              width: '100%',
+              height: '100%',
+              playerVars: {
+                autoplay: 1,
+                vq: 'hd1080',
+              },
+            }}
             style={{ aspectRatio: '16/9' }}
           />
         </div>
         <div style={{ padding: 'var(--spacing-md)' }}>
-          <h2 className="video-title" style={{ fontSize: 'var(--font-size-md)' }}>{video.title}</h2>
+          <h3 className="video-title">{video.title}</h3>
+          <p className="channel-name">{video.authorName}</p>
         </div>
       </div>
 
@@ -190,7 +196,8 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
                     }} 
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <h4 className="video-title" style={{ fontSize: '14px' }}>{related.title}</h4>
+                    <h3 className="video-title">{related.title}</h3>
+                    <p className="channel-name">{related.authorName}</p>
                   </div>
                 </div>
               ))}

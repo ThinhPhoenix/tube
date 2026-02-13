@@ -5,6 +5,7 @@ interface VideoInfo {
   videoId: string;
   title: string;
   thumbnail: string;
+  authorName?: string;
 }
 
 interface SearchTabProps {
@@ -13,13 +14,14 @@ interface SearchTabProps {
 
 const STORAGE_KEY = 'watched_videos';
 
-async function getVideoInfo(videoId: string): Promise<{ title: string; thumbnail: string }> {
+async function getVideoInfo(videoId: string): Promise<{ title: string; thumbnail: string; authorName?: string }> {
   try {
     const res = await fetch(`/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
     const data = await res.json();
     return {
       title: data.title || 'Unknown',
       thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+      authorName: data.author_name,
     };
   } catch {
     return {
@@ -193,7 +195,7 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
             />
             <div style={{ flex: 1, minWidth: 0 }}>
               <h3 className="video-title">{video.title}</h3>
-              <p className="channel-name">YouTube</p>
+              <p className="channel-name">{video.authorName}</p>
             </div>
           </div>
         ))}
