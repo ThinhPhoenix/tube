@@ -9,6 +9,7 @@ interface VideoInfo {
   videoId: string;
   title: string;
   thumbnail: string;
+  authorName?: string;
 }
 
 function App() {

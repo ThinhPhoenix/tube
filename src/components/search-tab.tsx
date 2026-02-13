@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface VideoInfo {
   videoId: string;
@@ -81,6 +81,7 @@ function saveWatchedVideo(video: VideoInfo) {
 }
 
 export function SearchTab({ onVideoSelect }: SearchTabProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [input, setInput] = useState('');
   const [results, setResults] = useState<VideoInfo[]>([]);
   const [recommended, setRecommended] = useState<VideoInfo[]>([]);
@@ -91,9 +92,17 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
-    if (isInitialLoad.current) {
-      isInitialLoad.current = false;
-      loadRecommended();
+    const query = searchParams.get('q');
+    if (query) {
+      setInput(query);
+      performSearch(query);
+      document.title = query;
+    } else {
+      document.title = 'Discover';
+      if (isInitialLoad.current) {
+        isInitialLoad.current = false;
+        loadRecommended();
+      }
     }
   }, []);
 
@@ -111,15 +120,13 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
     }
   };
 
-  const handleSearch = async () => {
-    if (!input.trim()) return;
-
+  const performSearch = async (query: string) => {
     setLoading(true);
     setHasSearched(true);
     setError('');
     
     try {
-      const videos = await searchYouTube(input);
+      const videos = await searchYouTube(query);
       setResults(videos);
       if (videos.length === 0) {
         setError('No videos found. Try a different keyword.');
@@ -133,10 +140,17 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
     }
   };
 
+  const handleSearch = async () => {
+    if (!input.trim()) return;
+    setSearchParams({ q: input });
+    document.title = input;
+    await performSearch(input);
+  };
+
   const handleVideoClick = (video: VideoInfo) => {
     saveWatchedVideo(video);
     onVideoSelect(video);
-    navigate('/playing');
+    navigate(`/playing?id=${video.videoId}`);
   };
 
   return (

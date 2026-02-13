@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import YouTube from 'react-youtube';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface VideoInfo {
   videoId: string;
@@ -11,6 +12,25 @@ interface VideoInfo {
 interface NowPlayingTabProps {
   video: VideoInfo | null;
   onVideoSelect: (video: VideoInfo) => void;
+}
+
+async function getVideoInfo(videoId: string): Promise<VideoInfo> {
+  try {
+    const res = await fetch(`/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    const data = await res.json();
+    return {
+      videoId,
+      title: data.title || 'YouTube Video',
+      thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+      authorName: data.author_name,
+    };
+  } catch {
+    return {
+      videoId,
+      title: 'YouTube Video',
+      thumbnail: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+    };
+  }
 }
 
 async function fetchRelatedVideos(videoId: string, page: number = 0): Promise<VideoInfo[]> {
@@ -58,23 +78,81 @@ async function fetchRelatedVideos(videoId: string, page: number = 0): Promise<Vi
 }
 
 export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [urlVideo, setUrlVideo] = useState<VideoInfo | null>(null);
   const [relatedVideos, setRelatedVideos] = useState<VideoInfo[]>([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const observerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<VideoInfo | null>(null);
+  const autoPlayTimerRef = useRef<number | null>(null);
+  const userInteractedRef = useRef(false);
+
+  const videoId = searchParams.get('id');
+  
+  // Derive current video: use urlVideo only if it matches the URL param, otherwise use prop
+  const currentVideo = (urlVideo && videoId === urlVideo.videoId) ? urlVideo : video;
+
+  const clearAutoPlayTimer = () => {
+    if (autoPlayTimerRef.current) {
+      clearTimeout(autoPlayTimerRef.current);
+      autoPlayTimerRef.current = null;
+    }
+  };
+
+  const handleUserInteraction = () => {
+    userInteractedRef.current = true;
+    clearAutoPlayTimer();
+  };
+
+  const handleRelatedVideoClick = (relatedVideo: VideoInfo) => {
+    clearAutoPlayTimer();
+    onVideoSelect(relatedVideo);
+    navigate(`/playing?id=${relatedVideo.videoId}`);
+  };
+
+  const handleVideoEnd = () => {
+    userInteractedRef.current = false;
+    clearAutoPlayTimer();
+    
+    autoPlayTimerRef.current = window.setTimeout(() => {
+      if (!userInteractedRef.current && relatedVideos.length > 0) {
+        const nextVideo = relatedVideos[0];
+        handleRelatedVideoClick(nextVideo);
+      }
+    }, 5000);
+  };
 
   useEffect(() => {
-    videoRef.current = video;
+    if (videoId) {
+      getVideoInfo(videoId).then(videoInfo => {
+        setUrlVideo(videoInfo);
+        onVideoSelect(videoInfo);
+      });
+    }
+  }, [videoId]);
+
+  useEffect(() => {
+    videoRef.current = currentVideo;
+    if (currentVideo) {
+      document.title = currentVideo.title;
+    }
+    clearAutoPlayTimer();
+    userInteractedRef.current = false;
+    
+    return () => {
+      clearAutoPlayTimer();
+    };
   });
 
   useEffect(() => {
-    const currentVideo = videoRef.current;
-    if (currentVideo) {
+    const currentVideoData = videoRef.current;
+    if (currentVideoData) {
       const loadVideos = async () => {
         setLoading(true);
-        const videos = await fetchRelatedVideos(currentVideo.videoId, 0);
+        const videos = await fetchRelatedVideos(currentVideoData.videoId, 0);
         setRelatedVideos(videos);
         setHasMore(videos.length >= 6);
         setPage(0);
@@ -82,15 +160,15 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
       };
       loadVideos();
     }
-  }, [video?.videoId]);
+  }, [currentVideo?.videoId]);
 
   const loadMore = useCallback(async () => {
-    const currentVideo = videoRef.current;
-    if (!currentVideo || loading || !hasMore) return;
+    const currentVideoData = videoRef.current;
+    if (!currentVideoData || loading || !hasMore) return;
     
     setLoading(true);
     const nextPage = page + 1;
-    const videos = await fetchRelatedVideos(currentVideo.videoId, nextPage);
+    const videos = await fetchRelatedVideos(currentVideoData.videoId, nextPage);
     
     if (videos.length > 0) {
       setRelatedVideos(prev => [...prev, ...videos]);
@@ -119,7 +197,7 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
     return () => observer.disconnect();
   }, [loadMore, hasMore, loading]);
 
-  if (!video) {
+  if (!currentVideo) {
     return (
       <div style={{ 
         display: 'flex', 
@@ -143,7 +221,12 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
   }
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', margin: 0, padding: 0 }}>
+    <div 
+      style={{ height: '100%', display: 'flex', flexDirection: 'column', margin: 0, padding: 0 }}
+      onTouchStart={handleUserInteraction}
+      onClick={handleUserInteraction}
+      onScroll={handleUserInteraction}
+    >
       <div style={{ flexShrink: 0, width: '100vw', marginLeft: 'calc(-1 * var(--spacing-md))', marginRight: 'calc(-1 * var(--spacing-md))' }}>
         <div style={{ 
           width: '100%',
@@ -151,7 +234,7 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
           background: '#000',
         }}>
           <YouTube
-            videoId={video.videoId}
+            videoId={currentVideo.videoId}
             opts={{
               width: '100%',
               height: '100%',
@@ -160,12 +243,13 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
                 vq: 'hd1080',
               },
             }}
+            onEnd={handleVideoEnd}
             style={{ aspectRatio: '16/9' }}
           />
         </div>
         <div style={{ padding: 'var(--spacing-md)' }}>
-          <h3 className="video-title">{video.title}</h3>
-          <p className="channel-name">{video.authorName}</p>
+          <h3 className="video-title">{currentVideo.title}</h3>
+          <p className="channel-name">{currentVideo.authorName}</p>
         </div>
       </div>
 
@@ -176,7 +260,7 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
               {relatedVideos.map((related) => (
                 <div 
                   key={related.videoId}
-                  onClick={() => onVideoSelect(related)}
+                  onClick={() => handleRelatedVideoClick(related)}
                   style={{ 
                     display: 'flex',
                     gap: 'var(--spacing-sm)',
