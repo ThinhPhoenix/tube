@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import YouTube from 'react-youtube';
 
 interface VideoInfo {
   videoId: string;
@@ -88,8 +89,19 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState('');
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const navigate = useNavigate();
   const isInitialLoad = useRef(true);
+  const [currentVideo, setCurrentVideo] = useState<VideoInfo | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const query = searchParams.get('q');
@@ -149,83 +161,176 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
 
   const handleVideoClick = (video: VideoInfo) => {
     saveWatchedVideo(video);
+    setCurrentVideo(video);
     onVideoSelect(video);
-    navigate(`/playing?id=${video.videoId}`);
+    if (!isLandscape) {
+      navigate(`/playing?id=${video.videoId}`);
+    }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: isLandscape ? 'row' : 'column', 
+      gap: 'var(--spacing-md)',
+      height: '100%',
+    }}>
       <div style={{ 
+        flex: isLandscape ? '1' : 'auto',
         display: 'flex', 
-        gap: 'var(--spacing-sm)',
-        background: '#121212',
-        padding: 'var(--spacing-sm)',
-        borderRadius: 'var(--radius-lg)',
+        flexDirection: 'column', 
+        gap: 'var(--spacing-md)',
+        overflowY: isLandscape ? 'auto' : 'visible',
       }}>
-        <i className="ph ph-magnifying-glass" style={{ color: '#AAAAAA', fontSize: '28px', alignSelf: 'center' }}></i>
-        <input
-          type="text"
-          placeholder="Search..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          style={{ 
-            flex: 1, 
-            background: 'transparent', 
-            padding: 'var(--spacing-sm)',
-            fontSize: 'var(--font-size-md)',
-          }}
-        />
-      </div>
-
-      {error && (
-        <p style={{ textAlign: 'center', fontSize: 'var(--font-size-md)', color: '#FF0000' }}>
-          {error}
-        </p>
-      )}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-        {(hasSearched ? results : recommended).map((video) => (
-          <div 
-            key={video.videoId}
-            onClick={() => handleVideoClick(video)}
+        <div style={{ 
+          display: 'flex', 
+          gap: 'var(--spacing-sm)',
+          background: '#121212',
+          padding: 'var(--spacing-sm)',
+          borderRadius: 'var(--radius-lg)',
+        }}>
+          <i className="ph ph-magnifying-glass" style={{ color: '#AAAAAA', fontSize: '28px', alignSelf: 'center' }}></i>
+          <input
+            type="text"
+            placeholder="Search..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             style={{ 
-              display: 'flex',
-              gap: 'var(--spacing-sm)',
-              cursor: 'pointer',
-              padding: 'var(--spacing-xs)',
+              flex: 1, 
+              background: 'transparent', 
+              padding: 'var(--spacing-sm)',
+              fontSize: 'var(--font-size-md)',
             }}
-          >
-            <img 
-              src={video.thumbnail} 
-              alt={video.title}
-              style={{ 
-                width: '168px',
-                height: '94px',
-                objectFit: 'cover',
-                borderRadius: 'var(--radius-sm)',
-                flexShrink: 0,
-              }} 
-            />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <h3 className="video-title">{video.title}</h3>
-              <p className="channel-name">{video.authorName}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+          />
+        </div>
 
-      {loading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-          {[...Array(5)].map((_, i) => (
-            <div key={i} style={{ display: 'flex', gap: 'var(--spacing-sm)', padding: 'var(--spacing-xs)' }}>
-              <div style={{ width: '168px', height: '94px', background: '#303030', borderRadius: '8px', flexShrink: 0 }} />
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
-                <div style={{ height: '20px', width: '100%', background: '#303030', borderRadius: '4px' }} />
-                <div style={{ height: '16px', width: '60%', background: '#303030', borderRadius: '4px' }} />
+        {error && (
+          <p style={{ textAlign: 'center', fontSize: 'var(--font-size-md)', color: '#FF0000' }}>
+            {error}
+          </p>
+        )}
+
+        <div style={{ 
+          display: 'grid',
+          gridTemplateColumns: isLandscape ? 'repeat(auto-fill, minmax(300px, 1fr))' : '1fr',
+          gap: 'var(--spacing-sm)',
+        }}>
+          {(hasSearched ? results : recommended).map((video) => (
+            <div 
+              key={video.videoId}
+              onClick={() => handleVideoClick(video)}
+              style={{ 
+                display: 'flex',
+                flexDirection: isLandscape ? 'column' : 'row',
+                gap: 'var(--spacing-sm)',
+                cursor: 'pointer',
+                padding: 'var(--spacing-xs)',
+              }}
+            >
+              <img 
+                src={video.thumbnail} 
+                alt={video.title}
+                style={{ 
+                  width: isLandscape ? '100%' : '168px',
+                  height: isLandscape ? 'auto' : '94px',
+                  aspectRatio: '16/9',
+                  objectFit: 'cover',
+                  borderRadius: 'var(--radius-sm)',
+                  flexShrink: 0,
+                }} 
+              />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3 className="video-title">{video.title}</h3>
+                <p className="channel-name">{video.authorName}</p>
               </div>
             </div>
           ))}
+        </div>
+
+        {loading && (
+          <div style={{ 
+            display: 'grid',
+            gridTemplateColumns: isLandscape ? 'repeat(auto-fill, minmax(300px, 1fr))' : '1fr',
+            gap: 'var(--spacing-sm)',
+          }}>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} style={{ 
+                display: 'flex', 
+                flexDirection: isLandscape ? 'column' : 'row',
+                gap: 'var(--spacing-sm)', 
+                padding: 'var(--spacing-xs)',
+              }}>
+                <div style={{ 
+                  width: isLandscape ? '100%' : '168px', 
+                  height: isLandscape ? 'auto' : '94px',
+                  aspectRatio: '16/9',
+                  background: '#303030', 
+                  borderRadius: '8px', 
+                  flexShrink: 0,
+                }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
+                  <div style={{ height: '20px', width: '100%', background: '#303030', borderRadius: '4px' }} />
+                  <div style={{ height: '16px', width: '60%', background: '#303030', borderRadius: '4px' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {isLandscape && currentVideo && (
+        <div style={{
+          width: '40%',
+          display: 'flex',
+          flexDirection: 'column',
+          borderLeft: '1px solid #303030',
+          paddingLeft: 'var(--spacing-md)',
+        }}>
+          <div style={{ 
+            width: '100%',
+            aspectRatio: '16/9',
+            background: '#000',
+            borderRadius: 'var(--radius-sm)',
+            overflow: 'hidden',
+          }}>
+            <YouTube
+              videoId={currentVideo.videoId}
+              opts={{
+                width: '100%',
+                height: '100%',
+                playerVars: {
+                  autoplay: 1,
+                  vq: 'hd1080',
+                },
+              }}
+              style={{ aspectRatio: '16/9' }}
+            />
+          </div>
+          <div style={{ padding: 'var(--spacing-md) 0' }}>
+            <h3 className="video-title">{currentVideo.title}</h3>
+            <p className="channel-name">{currentVideo.authorName}</p>
+          </div>
+          <button
+            onClick={() => navigate(`/playing?id=${currentVideo.videoId}`)}
+            style={{
+              background: '#FFFFFF',
+              color: '#000000',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
+              padding: 'var(--spacing-sm) var(--spacing-md)',
+              cursor: 'pointer',
+              fontSize: 'var(--font-size-md)',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 'var(--spacing-xs)',
+            }}
+          >
+            <i className="ph ph-monitor-play" style={{ fontSize: '20px' }}></i>
+            View Full Player
+          </button>
         </div>
       )}
     </div>

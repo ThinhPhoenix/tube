@@ -85,6 +85,7 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const observerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<VideoInfo | null>(null);
   const autoPlayTimerRef = useRef<number | null>(null);
@@ -94,6 +95,15 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
   
   // Derive current video: use urlVideo only if it matches the URL param, otherwise use prop
   const currentVideo = (urlVideo && videoId === urlVideo.videoId) ? urlVideo : video;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const clearAutoPlayTimer = () => {
     if (autoPlayTimerRef.current) {
@@ -222,12 +232,48 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
 
   return (
     <div 
-      style={{ height: '100%', display: 'flex', flexDirection: 'column', margin: 0, padding: 0 }}
+      style={{ 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: isLandscape ? 'row' : 'column', 
+        margin: 0, 
+        padding: 0,
+        position: 'relative',
+      }}
       onTouchStart={handleUserInteraction}
       onClick={handleUserInteraction}
       onScroll={handleUserInteraction}
     >
-      <div style={{ flexShrink: 0, width: '100vw', marginLeft: 'calc(-1 * var(--spacing-md))', marginRight: 'calc(-1 * var(--spacing-md))' }}>
+      {isLandscape && (
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            position: 'absolute',
+            top: 'var(--spacing-sm)',
+            left: 'var(--spacing-sm)',
+            zIndex: 10,
+            background: 'rgba(0, 0, 0, 0.7)',
+            border: 'none',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--spacing-sm)',
+            cursor: 'pointer',
+            color: '#FFFFFF',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-xs)',
+          }}
+        >
+          <i className="ph ph-magnifying-glass" style={{ fontSize: '24px' }}></i>
+        </button>
+      )}
+      <div style={{ 
+        flexShrink: 0, 
+        width: isLandscape ? '60%' : '100vw', 
+        marginLeft: isLandscape ? 0 : 'calc(-1 * var(--spacing-md))', 
+        marginRight: isLandscape ? 0 : 'calc(-1 * var(--spacing-md))',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
         <div style={{ 
           width: '100%',
           aspectRatio: '16/9',
@@ -253,16 +299,25 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto',
+        paddingLeft: isLandscape ? 'var(--spacing-md)' : 0,
+      }}>
         <div>
           {relatedVideos.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+            <div style={{ 
+              display: 'grid',
+              gridTemplateColumns: isLandscape ? '1fr' : '1fr',
+              gap: 'var(--spacing-sm)',
+            }}>
               {relatedVideos.map((related) => (
                 <div 
                   key={related.videoId}
                   onClick={() => handleRelatedVideoClick(related)}
                   style={{ 
                     display: 'flex',
+                    flexDirection: isLandscape ? 'column' : 'row',
                     gap: 'var(--spacing-sm)',
                     cursor: 'pointer',
                     padding: 'var(--spacing-xs)',
@@ -272,8 +327,9 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
                     src={related.thumbnail} 
                     alt={related.title}
                     style={{ 
-                      width: '168px',
-                      height: '94px',
+                      width: isLandscape ? '100%' : '168px',
+                      height: isLandscape ? 'auto' : '94px',
+                      aspectRatio: '16/9',
                       objectFit: 'cover',
                       borderRadius: 'var(--radius-sm)',
                       flexShrink: 0,
@@ -289,10 +345,26 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
           )}
           
           {loading && (
-     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+     <div style={{ 
+       display: 'grid',
+       gridTemplateColumns: isLandscape ? '1fr' : '1fr',
+       gap: 'var(--spacing-sm)',
+     }}>
               {[...Array(3)].map((_, i) => (
-                <div key={i} style={{ display: 'flex', gap: 'var(--spacing-sm)', padding: 'var(--spacing-xs)' }}>
-                  <div style={{ width: '168px', height: '94px', background: '#303030', borderRadius: 'var(--radius-sm)', flexShrink: 0 }} />
+                <div key={i} style={{ 
+                  display: 'flex', 
+                  flexDirection: isLandscape ? 'column' : 'row',
+                  gap: 'var(--spacing-sm)', 
+                  padding: 'var(--spacing-xs)',
+                }}>
+                  <div style={{ 
+                    width: isLandscape ? '100%' : '168px', 
+                    height: isLandscape ? 'auto' : '94px',
+                    aspectRatio: '16/9',
+                    background: '#303030', 
+                    borderRadius: 'var(--radius-sm)', 
+                    flexShrink: 0,
+                  }} />
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
                     <div style={{ height: '20px', width: '100%', background: '#303030', borderRadius: '4px' }} />
                     <div style={{ height: '14px', width: '60%', background: '#303030', borderRadius: '4px' }} />

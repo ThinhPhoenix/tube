@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 const tabStyle: React.CSSProperties = {
   flex: 1,
@@ -19,6 +20,21 @@ const activeTabStyle: React.CSSProperties = {
 };
 
 export function TabBar() {
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  if (isLandscape) {
+    return null;
+  }
+
   return (
     <nav style={{
       position: 'fixed',
