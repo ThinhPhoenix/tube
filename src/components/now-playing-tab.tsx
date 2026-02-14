@@ -5,6 +5,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 interface YouTubePlayer {
   unMute: () => void;
   playVideo: () => void;
+  setVolume: (volume: number) => void;
+  isMuted: () => boolean;
 }
 import { useHaptics } from 'waheim-haptics';
 
@@ -129,7 +131,10 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
     if (!userInteractedRef.current) {
       userInteractedRef.current = true;
       if (playerRef.current) {
-        playerRef.current.unMute();
+        if (playerRef.current.isMuted && playerRef.current.isMuted()) {
+          playerRef.current.unMute();
+        }
+        playerRef.current.setVolume(100);
         playerRef.current.playVideo();
       }
     }
