@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import YouTube, { YouTubePlayer } from 'react-youtube';
+import YouTube from 'react-youtube';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+
+interface YouTubePlayer {
+  unMute: () => void;
+  playVideo: () => void;
+}
 import { useHaptics } from 'waheim-haptics';
 
 interface VideoInfo {
