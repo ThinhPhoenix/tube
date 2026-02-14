@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import YouTube from 'react-youtube';
+import YouTube, { YouTubePlayer } from 'react-youtube';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useHaptics } from 'waheim-haptics';
 
@@ -95,7 +95,7 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const observerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<VideoInfo | null>(null);
-  const playerRef = useRef<any>(null);
+  const playerRef = useRef<YouTubePlayer | null>(null);
   const autoPlayTimerRef = useRef<number | null>(null);
   const userInteractedRef = useRef(false);
 
@@ -309,7 +309,7 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
                 },
               }}
               style={{ width: '100%', height: '100%' }}
-              onReady={(event: any) => {
+              onReady={(event: { target: YouTubePlayer }) => {
                 playerRef.current = event.target;
               }}
               onEnd={handleVideoEnd}

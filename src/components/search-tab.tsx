@@ -143,7 +143,7 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
       performSearch(query);
       document.title = query;
     } else {
-      document.title = 'Discover';
+      document.title = 'Welcome back!';
       if (isInitialLoad.current) {
         isInitialLoad.current = false;
         loadRecommended(0);
