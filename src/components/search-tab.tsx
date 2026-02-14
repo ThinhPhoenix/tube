@@ -259,26 +259,36 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
         overflowY: isLandscape ? 'auto' : 'visible',
       }}>
         <div style={{ 
-          display: 'flex', 
-          background: '#121212',
-          padding: 'var(--spacing-sm)',
-          borderRadius: 'var(--radius-lg)',
           marginBottom: 'var(--spacing-md)',
         }}>
-          <i className="ph ph-magnifying-glass" style={{ color: '#AAAAAA', fontSize: '28px', alignSelf: 'center', marginRight: 'var(--spacing-sm)' }}></i>
-          <input
-            type="text"
-            placeholder="Search..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            style={{ 
-              flex: 1, 
-              background: 'transparent', 
-              padding: 'var(--spacing-sm)',
-              fontSize: 'var(--font-size-md)',
-            }}
-          />
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            background: '#121212',
+            border: '1px solid #303030',
+            borderRadius: 'var(--radius-lg)',
+            padding: '0 var(--spacing-sm)',
+          }}>
+            <i className="ph ph-magnifying-glass" style={{ color: '#AAAAAA', fontSize: '24px', flexShrink: 0 }}></i>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              style={{ 
+                flex: 1, 
+                background: 'transparent', 
+                border: 'none',
+                outline: 'none',
+                padding: '12px var(--spacing-sm)',
+                fontSize: '16px',
+                color: '#FFFFFF',
+                WebkitAppearance: 'none',
+                appearance: 'none',
+              }}
+            />
+          </div>
         </div>
 
         {error && (
