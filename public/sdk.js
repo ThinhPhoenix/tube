@@ -100,7 +100,6 @@
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         const manifest = await response.json();
-        console.log('[Waheim SDK] Manifest loaded:', manifest);
         return manifest;
       } catch (error) {
         console.warn('[Waheim SDK] Could not load manifest:', error);
@@ -989,19 +988,7 @@
         isIOSStandalone ||
         hasPWAFeatures;
 
-      console.log('[Waheim SDK] PWA Detection Results:');
-      console.log('  - isStandalone():', isStandaloneMode);
-      console.log('  - display-mode standalone:', isStandaloneDisplayMode);
-      console.log('  - display-mode fullscreen:', isFullscreenDisplayMode);
-      console.log('  - display-mode minimal-ui:', isMinimalUIDisplayMode);
-      console.log('  - iOS standalone:', isIOSStandalone);
-      console.log('  - hasPWAFeatures:', hasPWAFeatures);
-      console.log('  - Final decision - skip init:', isAlreadyInstalled);
-
       if (isAlreadyInstalled) {
-        console.log(
-          '[Waheim SDK] App already installed/PWA mode - skipping initialization',
-        );
         return this;
       }
 
@@ -1023,7 +1010,6 @@
 
     // Check if should show drawer
     shouldShowDrawer: (config) => {
-      console.log('[Waheim SDK] shouldShowDrawer check:');
 
       // Detailed standalone mode debugging
       const isStandaloneMode = utils.isStandalone();
@@ -1039,40 +1025,21 @@
         userAgent &&
         (userAgent.includes('wv') || userAgent.includes('WebView'));
 
-      console.log('  - Standalone mode:', isStandaloneMode);
-      console.log('  - Display mode standalone:', displayModeMatch);
-      console.log('  - Display mode fullscreen:', fullscreenModeMatch);
-      console.log('  - iOS standalone:', iosStandalone);
-      console.log('  - User Agent:', userAgent);
-      console.log('  - Has WebView:', hasWebView);
-      console.log('  - Mobile:', utils.isMobile());
-      console.log('  - Dark mode:', utils.isDarkMode());
-      console.log('  - Mobile only:', config.mobileOnly);
-      console.log('  - Show once:', config.showOnce);
-
       // Don't show if in standalone mode
       if (isStandaloneMode) {
-        console.log('  - ❌ Blocked: Running in standalone mode');
         return false;
       }
 
       // Don't show if not mobile (optional)
       if (config.mobileOnly && !utils.isMobile()) {
-        console.log('  - ❌ Blocked: Not mobile and mobileOnly is true');
         return false;
       }
-
-      console.log('  - ✅ Should show drawer');
       return true;
     },
 
     // Show drawer
     showDrawer: async function (options = {}) {
-      // Final failsafe check - don't show if in any PWA mode
       if (utils.isStandalone()) {
-        console.log(
-          '[Waheim SDK] Final check: Standalone mode detected - aborting drawer show',
-        );
         return this;
       }
 
@@ -1098,7 +1065,6 @@
 
     // Force show drawer (for testing)
     forceShowDrawer: async function (options = {}) {
-      console.log('[Waheim SDK] Force showing drawer...');
       return this.showDrawer({
         showOnce: false,
         ...options,
@@ -1123,17 +1089,8 @@
   const initializeSDK = () => {
     // Check if app is already in standalone mode
     if (utils.isStandalone()) {
-      console.log(
-        '[Waheim SDK] App running in standalone mode - skipping initialization',
-      );
       return;
     }
-
-    // Debug info
-    console.log('[Waheim SDK] Initializing...');
-    console.log('[Waheim SDK] Standalone mode:', utils.isStandalone());
-    console.log('[Waheim SDK] Mobile:', utils.isMobile());
-    console.log('[Waheim SDK] Dark mode:', utils.isDarkMode());
 
     // Auto-initialize
     WaheimSDK.init();
