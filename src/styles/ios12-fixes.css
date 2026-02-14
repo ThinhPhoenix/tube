@@ -1,0 +1,19 @@
+/* iOS 12 compatibility fixes */
+
+/* Remove gap support detection - use margin instead */
+* {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+/* Ensure flexbox works on old iOS */
+.app-container {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+}
+
+/* Smooth scrolling for iOS */
+* {
+  -webkit-overflow-scrolling: touch;
+}

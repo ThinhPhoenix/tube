@@ -224,11 +224,10 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
         justifyContent: 'center',
         height: '100%',
         textAlign: 'center',
-        gap: 'var(--spacing-md)',
         color: '#AAAAAA',
       }}>
-        <i className="ph ph-monitor-play" style={{ fontSize: '80px' }}></i>
-        <p style={{ fontSize: 'var(--font-size-lg)' }}>
+        <i className="ph ph-monitor-play" style={{ fontSize: '80px', marginBottom: 'var(--spacing-md)' }}></i>
+        <p style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--spacing-sm)' }}>
           No video selected
         </p>
         <p style={{ fontSize: 'var(--font-size-md)' }}>
@@ -271,7 +270,6 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
             color: '#FFFFFF',
             display: 'flex',
             alignItems: 'center',
-            gap: 'var(--spacing-xs)',
           }}
         >
           <i className="ph ph-magnifying-glass" style={{ fontSize: '24px' }}></i>
@@ -287,22 +285,24 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
       }}>
         <div style={{ 
           width: '100%',
-          aspectRatio: '16/9',
+          paddingBottom: '56.25%',
+          position: 'relative',
           background: '#000',
         }}>
-          <YouTube
-            videoId={currentVideo.videoId}
-            opts={{
-              width: '100%',
-              height: '100%',
-              playerVars: {
-                autoplay: 1,
-                vq: 'hd1080',
-              },
-            }}
-            onEnd={handleVideoEnd}
-            style={{ aspectRatio: '16/9' }}
-          />
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
+            <YouTube
+              videoId={currentVideo.videoId}
+              opts={{
+                width: '100%',
+                height: '100%',
+                playerVars: {
+                  autoplay: 1,
+                  vq: 'hd1080',
+                },
+              }}
+              onEnd={handleVideoEnd}
+            />
+          </div>
         </div>
         <div style={{ padding: 'var(--spacing-md)' }}>
           <h3 className="video-title">{currentVideo.title}</h3>
@@ -320,7 +320,7 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
             <div style={{ 
               display: 'grid',
               gridTemplateColumns: isLandscape ? '1fr' : '1fr',
-              gap: 'var(--spacing-sm)',
+              gridGap: 'var(--spacing-sm)',
             }}>
               {relatedVideos.map((related) => (
                 <div 
@@ -329,7 +329,6 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
                   style={{ 
                     display: 'flex',
                     flexDirection: isLandscape ? 'column' : 'row',
-                    gap: 'var(--spacing-sm)',
                     cursor: 'pointer',
                     padding: 'var(--spacing-xs)',
                   }}
@@ -340,10 +339,11 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
                     style={{ 
                       width: isLandscape ? '100%' : '168px',
                       height: isLandscape ? 'auto' : '94px',
-                      aspectRatio: '16/9',
                       objectFit: 'cover',
                       borderRadius: 'var(--radius-sm)',
                       flexShrink: 0,
+                      marginRight: isLandscape ? '0' : 'var(--spacing-sm)',
+                      marginBottom: isLandscape ? 'var(--spacing-sm)' : '0',
                     }} 
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -359,25 +359,25 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
      <div style={{ 
        display: 'grid',
        gridTemplateColumns: isLandscape ? '1fr' : '1fr',
-       gap: 'var(--spacing-sm)',
+       gridGap: 'var(--spacing-sm)',
      }}>
               {[...Array(3)].map((_, i) => (
                 <div key={i} style={{ 
                   display: 'flex', 
                   flexDirection: isLandscape ? 'column' : 'row',
-                  gap: 'var(--spacing-sm)', 
                   padding: 'var(--spacing-xs)',
                 }}>
                   <div style={{ 
                     width: isLandscape ? '100%' : '168px', 
                     height: isLandscape ? 'auto' : '94px',
-                    aspectRatio: '16/9',
                     background: '#303030', 
                     borderRadius: 'var(--radius-sm)', 
                     flexShrink: 0,
+                    marginRight: isLandscape ? '0' : 'var(--spacing-sm)',
+                    marginBottom: isLandscape ? 'var(--spacing-sm)' : '0',
                   }} />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
-                    <div style={{ height: '20px', width: '100%', background: '#303030', borderRadius: '4px' }} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                    <div style={{ height: '20px', width: '100%', background: '#303030', borderRadius: '4px', marginBottom: '8px' }} />
                     <div style={{ height: '14px', width: '60%', background: '#303030', borderRadius: '4px' }} />
                   </div>
                 </div>

@@ -177,24 +177,22 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
     <div style={{ 
       display: 'flex', 
       flexDirection: isLandscape ? 'row' : 'column', 
-      gap: 'var(--spacing-md)',
       height: '100%',
     }}>
       <div style={{ 
         flex: isLandscape ? '1' : 'auto',
         display: 'flex', 
         flexDirection: 'column', 
-        gap: 'var(--spacing-md)',
         overflowY: isLandscape ? 'auto' : 'visible',
       }}>
         <div style={{ 
           display: 'flex', 
-          gap: 'var(--spacing-sm)',
           background: '#121212',
           padding: 'var(--spacing-sm)',
           borderRadius: 'var(--radius-lg)',
+          marginBottom: 'var(--spacing-md)',
         }}>
-          <i className="ph ph-magnifying-glass" style={{ color: '#AAAAAA', fontSize: '28px', alignSelf: 'center' }}></i>
+          <i className="ph ph-magnifying-glass" style={{ color: '#AAAAAA', fontSize: '28px', alignSelf: 'center', marginRight: 'var(--spacing-sm)' }}></i>
           <input
             type="text"
             placeholder="Search..."
@@ -219,7 +217,7 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
         <div style={{ 
           display: 'grid',
           gridTemplateColumns: isLandscape ? 'repeat(auto-fill, minmax(300px, 1fr))' : '1fr',
-          gap: 'var(--spacing-sm)',
+          gridGap: 'var(--spacing-sm)',
         }}>
           {(hasSearched ? results : recommended).map((video) => (
             <div 
@@ -228,7 +226,6 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
               style={{ 
                 display: 'flex',
                 flexDirection: isLandscape ? 'column' : 'row',
-                gap: 'var(--spacing-sm)',
                 cursor: 'pointer',
                 padding: 'var(--spacing-xs)',
               }}
@@ -239,10 +236,11 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
                 style={{ 
                   width: isLandscape ? '100%' : '168px',
                   height: isLandscape ? 'auto' : '94px',
-                  aspectRatio: '16/9',
                   objectFit: 'cover',
                   borderRadius: 'var(--radius-sm)',
                   flexShrink: 0,
+                  marginRight: isLandscape ? '0' : 'var(--spacing-sm)',
+                  marginBottom: isLandscape ? 'var(--spacing-sm)' : '0',
                 }} 
               />
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -257,25 +255,25 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
           <div style={{ 
             display: 'grid',
             gridTemplateColumns: isLandscape ? 'repeat(auto-fill, minmax(300px, 1fr))' : '1fr',
-            gap: 'var(--spacing-sm)',
+            gridGap: 'var(--spacing-sm)',
           }}>
             {[...Array(5)].map((_, i) => (
               <div key={i} style={{ 
                 display: 'flex', 
                 flexDirection: isLandscape ? 'column' : 'row',
-                gap: 'var(--spacing-sm)', 
                 padding: 'var(--spacing-xs)',
               }}>
                 <div style={{ 
                   width: isLandscape ? '100%' : '168px', 
                   height: isLandscape ? 'auto' : '94px',
-                  aspectRatio: '16/9',
                   background: '#303030', 
                   borderRadius: '8px', 
                   flexShrink: 0,
+                  marginRight: isLandscape ? '0' : 'var(--spacing-sm)',
+                  marginBottom: isLandscape ? 'var(--spacing-sm)' : '0',
                 }} />
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 }}>
-                  <div style={{ height: '20px', width: '100%', background: '#303030', borderRadius: '4px' }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                  <div style={{ height: '20px', width: '100%', background: '#303030', borderRadius: '4px', marginBottom: '8px' }} />
                   <div style={{ height: '16px', width: '60%', background: '#303030', borderRadius: '4px' }} />
                 </div>
               </div>
@@ -294,23 +292,25 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
         }}>
           <div style={{ 
             width: '100%',
-            aspectRatio: '16/9',
+            paddingBottom: '56.25%',
+            position: 'relative',
             background: '#000',
             borderRadius: 'var(--radius-sm)',
             overflow: 'hidden',
           }}>
-            <YouTube
-              videoId={currentVideo.videoId}
-              opts={{
-                width: '100%',
-                height: '100%',
-                playerVars: {
-                  autoplay: 1,
-                  vq: 'hd1080',
-                },
-              }}
-              style={{ aspectRatio: '16/9' }}
-            />
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
+              <YouTube
+                videoId={currentVideo.videoId}
+                opts={{
+                  width: '100%',
+                  height: '100%',
+                  playerVars: {
+                    autoplay: 1,
+                    vq: 'hd1080',
+                  },
+                }}
+              />
+            </div>
           </div>
           <div style={{ padding: 'var(--spacing-md) 0' }}>
             <h3 className="video-title">{currentVideo.title}</h3>
@@ -333,12 +333,10 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 'var(--spacing-xs)',
             }}
           >
-            <i className="ph ph-monitor-play" style={{ fontSize: '20px' }}></i>
-            View Full Player
-          </button>
+            <i className="ph ph-monitor-play" style={{ fontSize: '20px', marginRight: 'var(--spacing-xs)' }}></i>
+            View Full Player</button>
         </div>
       )}
     </div>
