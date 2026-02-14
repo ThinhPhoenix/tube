@@ -95,6 +95,7 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const observerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<VideoInfo | null>(null);
+  const playerRef = useRef<any>(null);
   const autoPlayTimerRef = useRef<number | null>(null);
   const userInteractedRef = useRef(false);
 
@@ -120,7 +121,13 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
   };
 
   const handleUserInteraction = () => {
-    userInteractedRef.current = true;
+    if (!userInteractedRef.current) {
+      userInteractedRef.current = true;
+      if (playerRef.current) {
+        playerRef.current.unMute();
+        playerRef.current.playVideo();
+      }
+    }
     clearAutoPlayTimer();
   };
 
@@ -302,6 +309,9 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
                 },
               }}
               style={{ width: '100%', height: '100%' }}
+              onReady={(event: any) => {
+                playerRef.current = event.target;
+              }}
               onEnd={handleVideoEnd}
             />
           </div>
