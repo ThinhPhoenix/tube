@@ -290,33 +290,27 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
         <div style={{ 
           display: 'grid',
           gridTemplateColumns: isLandscape ? 'repeat(auto-fill, minmax(300px, 1fr))' : '1fr',
-          gridGap: 'var(--spacing-sm)',
+          gridGap: 'var(--spacing-md)',
         }}>
           {(hasSearched ? results : recommended).map((video) => (
             <div 
               key={video.videoId}
               onClick={() => handleVideoClick(video)}
               style={{ 
-                display: 'flex',
-                flexDirection: isLandscape ? 'column' : 'row',
                 cursor: 'pointer',
-                padding: 'var(--spacing-xs)',
               }}
             >
               <img 
                 src={video.thumbnail} 
                 alt={video.title}
                 style={{ 
-                  width: isLandscape ? '100%' : '168px',
-                  height: isLandscape ? 'auto' : '94px',
+                  width: '100%',
+                  aspectRatio: '16/9',
                   objectFit: 'cover',
                   borderRadius: 'var(--radius-sm)',
-                  flexShrink: 0,
-                  marginRight: isLandscape ? '0' : 'var(--spacing-sm)',
-                  marginBottom: isLandscape ? 'var(--spacing-sm)' : '0',
                 }} 
               />
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ paddingTop: 'var(--spacing-sm)', minWidth: 0 }}>
                 <h3 className="video-title">{video.title}</h3>
                 <p className="channel-name">{video.authorName}</p>
               </div>
@@ -328,24 +322,20 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
           <div style={{ 
             display: 'grid',
             gridTemplateColumns: isLandscape ? 'repeat(auto-fill, minmax(300px, 1fr))' : '1fr',
-            gridGap: 'var(--spacing-sm)',
+            gridGap: 'var(--spacing-md)',
           }}>
             {[...Array(5)].map((_, i) => (
               <div key={i} style={{ 
                 display: 'flex', 
-                flexDirection: isLandscape ? 'column' : 'row',
-                padding: 'var(--spacing-xs)',
+                flexDirection: 'column',
               }}>
                 <div style={{ 
-                  width: isLandscape ? '100%' : '168px', 
-                  height: isLandscape ? 'auto' : '94px',
+                  width: '100%',
+                  aspectRatio: '16/9',
                   background: '#303030', 
                   borderRadius: '8px', 
-                  flexShrink: 0,
-                  marginRight: isLandscape ? '0' : 'var(--spacing-sm)',
-                  marginBottom: isLandscape ? 'var(--spacing-sm)' : '0',
                 }} />
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <div style={{ paddingTop: 'var(--spacing-sm)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ height: '20px', width: '100%', background: '#303030', borderRadius: '4px', marginBottom: '8px' }} />
                   <div style={{ height: '16px', width: '60%', background: '#303030', borderRadius: '4px' }} />
                 </div>

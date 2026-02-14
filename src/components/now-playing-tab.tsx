@@ -341,34 +341,28 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
           {relatedVideos.length > 0 && (
             <div style={{ 
               display: 'grid',
-              gridTemplateColumns: isLandscape ? '1fr' : '1fr',
-              gridGap: 'var(--spacing-sm)',
+              gridTemplateColumns: '1fr',
+              gridGap: 'var(--spacing-md)',
             }}>
               {relatedVideos.map((related) => (
                 <div 
                   key={related.videoId}
                   onClick={() => handleRelatedVideoClick(related)}
                   style={{ 
-                    display: 'flex',
-                    flexDirection: isLandscape ? 'column' : 'row',
                     cursor: 'pointer',
-                    padding: 'var(--spacing-xs)',
                   }}
                 >
                   <img 
                     src={related.thumbnail} 
                     alt={related.title}
                     style={{ 
-                      width: isLandscape ? '100%' : '168px',
-                      height: isLandscape ? 'auto' : '94px',
+                      width: '100%',
+                      aspectRatio: '16/9',
                       objectFit: 'cover',
                       borderRadius: 'var(--radius-sm)',
-                      flexShrink: 0,
-                      marginRight: isLandscape ? '0' : 'var(--spacing-sm)',
-                      marginBottom: isLandscape ? 'var(--spacing-sm)' : '0',
                     }} 
                   />
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ paddingTop: 'var(--spacing-sm)', minWidth: 0 }}>
                     <h3 className="video-title">{related.title}</h3>
                     <p className="channel-name">{related.authorName}</p>
                   </div>
@@ -378,27 +372,23 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
           )}
           
           {loading && (
-     <div style={{ 
-       display: 'grid',
-       gridTemplateColumns: isLandscape ? '1fr' : '1fr',
-       gridGap: 'var(--spacing-sm)',
-     }}>
+            <div style={{ 
+              display: 'grid',
+              gridTemplateColumns: '1fr',
+              gridGap: 'var(--spacing-md)',
+            }}>
               {[...Array(3)].map((_, i) => (
                 <div key={i} style={{ 
                   display: 'flex', 
-                  flexDirection: isLandscape ? 'column' : 'row',
-                  padding: 'var(--spacing-xs)',
+                  flexDirection: 'column',
                 }}>
                   <div style={{ 
-                    width: isLandscape ? '100%' : '168px', 
-                    height: isLandscape ? 'auto' : '94px',
+                    width: '100%',
+                    aspectRatio: '16/9',
                     background: '#303030', 
                     borderRadius: 'var(--radius-sm)', 
-                    flexShrink: 0,
-                    marginRight: isLandscape ? '0' : 'var(--spacing-sm)',
-                    marginBottom: isLandscape ? 'var(--spacing-sm)' : '0',
                   }} />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                  <div style={{ paddingTop: 'var(--spacing-sm)', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ height: '20px', width: '100%', background: '#303030', borderRadius: '4px', marginBottom: '8px' }} />
                     <div style={{ height: '14px', width: '60%', background: '#303030', borderRadius: '4px' }} />
                   </div>
