@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import YouTube from 'react-youtube';
 import { useHaptics } from 'waheim-haptics';
@@ -34,8 +34,9 @@ async function getVideoInfo(videoId: string): Promise<{ title: string; thumbnail
   }
 }
 
-async function searchYouTube(query: string): Promise<VideoInfo[]> {
-  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+async function searchYouTube(query: string, page: number = 0): Promise<VideoInfo[]> {
+  const start = page * 10;
+  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=CAI%253D${start}`;
   const response = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`);
   const html = await response.text();
   
@@ -44,7 +45,31 @@ async function searchYouTube(query: string): Promise<VideoInfo[]> {
   
   const videoIds = [...new Set([...pattern1, ...pattern2])]
     .map(s => s.replace('"videoId":"', '').replace('watch?v=', ''))
+    .filter(id => id.length === 11)
     .slice(0, 10);
+
+  if (videoIds.length === 0 && page > 0) {
+    const fallbackUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+    const fallbackResponse = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(fallbackUrl)}`);
+    const fallbackHtml = await fallbackResponse.text();
+    
+    const fallbackPattern1 = fallbackHtml.match(/"videoId":"[a-zA-Z0-9_-]{11}/g) || [];
+    const fallbackPattern2 = fallbackHtml.match(/watch\?v=[a-zA-Z0-9_-]{11}/g) || [];
+    
+    const fallbackIds = [...new Set([...fallbackPattern1, ...fallbackPattern2])]
+      .map(s => s.replace('"videoId":"', '').replace('watch?v=', ''))
+      .filter(id => id.length === 11);
+    
+    const uniqueIds = [...new Set([...videoIds, ...fallbackIds])].slice(0, 10);
+    
+    const videos: VideoInfo[] = await Promise.all(
+      uniqueIds.map(async (videoId) => {
+        const info = await getVideoInfo(videoId);
+        return { videoId, ...info };
+      })
+    );
+    return videos;
+  }
 
   const videos: VideoInfo[] = await Promise.all(
     videoIds.map(async (videoId) => {
@@ -56,16 +81,16 @@ async function searchYouTube(query: string): Promise<VideoInfo[]> {
   return videos;
 }
 
-async function getRecommended(): Promise<VideoInfo[]> {
+async function getRecommended(page: number = 0): Promise<VideoInfo[]> {
   const watched = getWatchedVideos();
   
-  if (watched.length > 0) {
+  if (watched.length > 0 && page === 0) {
     const lastWatched = watched[0];
-    const related = await searchYouTube(lastWatched.title.split(' ').slice(0, 2).join(' '));
+    const related = await searchYouTube(lastWatched.title.split(' ').slice(0, 2).join(' '), page);
     if (related.length > 0) return related;
   }
   
-  return searchYouTube('trending');
+  return searchYouTube('trending', page);
 }
 
 function getWatchedVideos(): VideoInfo[] {
@@ -94,9 +119,13 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState('');
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const navigate = useNavigate();
   const isInitialLoad = useRef(true);
   const [currentVideo, setCurrentVideo] = useState<VideoInfo | null>(null);
+  const observerRef = useRef<HTMLDivElement>(null);
+  const currentQueryRef = useRef<string>('');
 
   useEffect(() => {
     const handleResize = () => {
@@ -117,17 +146,22 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
       document.title = 'Discover';
       if (isInitialLoad.current) {
         isInitialLoad.current = false;
-        loadRecommended();
+        loadRecommended(0);
       }
     }
   }, []);
 
-  const loadRecommended = async () => {
+  const loadRecommended = async (pageNum: number = 0) => {
     setLoading(true);
     setError('');
     try {
-      const videos = await getRecommended();
-      setRecommended(videos);
+      const videos = await getRecommended(pageNum);
+      if (pageNum === 0) {
+        setRecommended(videos);
+      } else {
+        setRecommended(prev => [...prev, ...videos]);
+      }
+      setHasMore(videos.length >= 10);
     } catch (e) {
       console.error(e);
       setError('Failed to load videos. Please try again.');
@@ -136,16 +170,23 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
     }
   };
 
-  const performSearch = async (query: string) => {
+  const performSearch = async (query: string, pageNum: number = 0) => {
     setLoading(true);
     setHasSearched(true);
     setError('');
+    currentQueryRef.current = query;
     
     try {
-      const videos = await searchYouTube(query);
-      setResults(videos);
+      const videos = await searchYouTube(query, pageNum);
+      if (pageNum === 0) {
+        setResults(videos);
+      } else {
+        setResults(prev => [...prev, ...videos]);
+      }
+      setHasMore(videos.length >= 10);
       if (videos.length === 0) {
-        setError('No videos found. Try a different keyword.');
+        setError('No more videos found.');
+        setHasMore(false);
       }
     } catch (e) {
       console.error('Search failed:', e);
@@ -156,11 +197,43 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
     }
   };
 
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore) return;
+    
+    const nextPage = page + 1;
+    setPage(nextPage);
+    
+    if (hasSearched) {
+      await performSearch(currentQueryRef.current, nextPage);
+    } else {
+      await loadRecommended(nextPage);
+    }
+  }, [loading, hasMore, page, hasSearched]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [loadMore, hasMore, loading]);
+
   const handleSearch = async () => {
     if (!input.trim()) return;
+    setPage(0);
+    setHasMore(true);
     setSearchParams({ q: input });
     document.title = input;
-    await performSearch(input);
+    await performSearch(input, 0);
   };
 
   const handleVideoClick = (video: VideoInfo) => {
@@ -280,6 +353,12 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
             ))}
           </div>
         )}
+
+        <div ref={observerRef} style={{ textAlign: 'center', padding: 'var(--spacing-md) 0' }}>
+          {!hasMore && (hasSearched ? results : recommended).length > 0 && (
+            <p style={{ color: '#AAAAAA', fontSize: '14px' }}>No more videos</p>
+          )}
+        </div>
       </div>
 
       {isLandscape && currentVideo && (
@@ -306,9 +385,11 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
                   height: '100%',
                   playerVars: {
                     autoplay: 1,
+                    mute: 1,
                     vq: 'hd1080',
                   },
                 }}
+                style={{ width: '100%', height: '100%' }}
               />
             </div>
           </div>

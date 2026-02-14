@@ -297,9 +297,11 @@ export function NowPlayingTab({ video, onVideoSelect }: NowPlayingTabProps) {
                 height: '100%',
                 playerVars: {
                   autoplay: 1,
+                  mute: 1,
                   vq: 'hd1080',
                 },
               }}
+              style={{ width: '100%', height: '100%' }}
               onEnd={handleVideoEnd}
             />
           </div>
