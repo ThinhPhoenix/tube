@@ -17,7 +17,7 @@ interface NowPlayingTabProps {
 
 async function getVideoInfo(videoId: string): Promise<VideoInfo> {
   try {
-    const res = await fetch(`/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
     const data = await res.json();
     return {
       videoId,
@@ -36,7 +36,7 @@ async function getVideoInfo(videoId: string): Promise<VideoInfo> {
 
 async function fetchRelatedVideos(videoId: string, page: number = 0): Promise<VideoInfo[]> {
   try {
-    const response = await fetch(`/ytproxy/watch?v=${videoId}`);
+    const response = await fetch(`https://www.youtube.com/watch?v=${videoId}`);
     const html = await response.text();
     
     const pattern1 = html.match(/"videoId":"[a-zA-Z0-9_-]{11}/g) || [];
@@ -54,7 +54,7 @@ async function fetchRelatedVideos(videoId: string, page: number = 0): Promise<Vi
     const videos: VideoInfo[] = await Promise.all(
       slicedIds.map(async (vid) => {
         try {
-          const res = await fetch(`/oembed?url=https://www.youtube.com/watch?v=${vid}&format=json`);
+          const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${vid}&format=json`);
           const data = await res.json();
           return {
             videoId: vid,
