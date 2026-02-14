@@ -20,6 +20,26 @@ const activeTabStyle: React.CSSProperties = {
   color: '#FFFFFF',
 };
 
+const sidebarTabStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  textDecoration: 'none',
+  color: '#AAAAAA',
+  fontSize: '14px',
+  fontWeight: '500',
+  gap: '8px',
+  padding: '20px 0',
+  transition: 'color 0.2s, background 0.2s',
+  width: '100%',
+};
+
+const sidebarActiveTabStyle: React.CSSProperties = {
+  color: '#FFFFFF',
+  background: 'rgba(255, 255, 255, 0.1)',
+};
+
 export function TabBar() {
   const triggerHaptics = useHaptics();
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
@@ -34,7 +54,45 @@ export function TabBar() {
   }, []);
 
   if (isLandscape) {
-    return null;
+    return (
+      <nav style={{
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: '80px',
+        background: '#181818',
+        borderRight: '1px solid #303030',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        zIndex: 100,
+      }}>
+        <NavLink
+          to="/"
+          onClick={() => triggerHaptics()}
+          style={({ isActive }) => ({
+            ...sidebarTabStyle,
+            ...(isActive ? sidebarActiveTabStyle : {}),
+          })}
+        >
+          <i className="ph ph-magnifying-glass" style={{ fontSize: '32px' }}></i>
+          <span style={{ fontSize: '11px' }}>Search</span>
+        </NavLink>
+        
+        <NavLink
+          to="/playing"
+          onClick={() => triggerHaptics()}
+          style={({ isActive }) => ({
+            ...sidebarTabStyle,
+            ...(isActive ? sidebarActiveTabStyle : {}),
+          })}
+        >
+          <i className="ph ph-monitor-play" style={{ fontSize: '32px' }}></i>
+          <span style={{ fontSize: '11px' }}>Playing</span>
+        </NavLink>
+      </nav>
+    );
   }
 
   return (
@@ -50,6 +108,7 @@ export function TabBar() {
       borderTop: '1px solid #303030',
       display: 'flex',
       paddingBottom: '8px',
+      zIndex: 100,
     }}>
       <NavLink
         to="/"

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { TabBar } from './components/ui/tab-bar';
 import { SearchTab } from './components/search-tab';
@@ -14,6 +14,16 @@ interface VideoInfo {
 
 function App() {
   const [currentVideo, setCurrentVideo] = useState<VideoInfo | null>(null);
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleVideoSelect = (video: VideoInfo) => {
     setCurrentVideo(video);
@@ -21,7 +31,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="app-container">
+      <div className={`app-container ${isLandscape ? 'landscape-mode' : 'portrait-mode'}`}>
         <main className="main-content">
           <Routes>
             <Route 

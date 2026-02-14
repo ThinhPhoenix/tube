@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import YouTube from 'react-youtube';
 import { useHaptics } from 'waheim-haptics';
 
 interface VideoInfo {
@@ -118,23 +117,12 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState('');
-  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const navigate = useNavigate();
   const isInitialLoad = useRef(true);
-  const [currentVideo, setCurrentVideo] = useState<VideoInfo | null>(null);
   const observerRef = useRef<HTMLDivElement>(null);
   const currentQueryRef = useRef<string>('');
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsLandscape(window.innerWidth > window.innerHeight);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     const query = searchParams.get('q');
@@ -239,24 +227,21 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
   const handleVideoClick = (video: VideoInfo) => {
     triggerHaptics();
     saveWatchedVideo(video);
-    setCurrentVideo(video);
     onVideoSelect(video);
-    if (!isLandscape) {
-      navigate(`/playing?id=${video.videoId}`);
-    }
+    navigate(`/playing?id=${video.videoId}`);
   };
 
   return (
     <div style={{ 
       display: 'flex', 
-      flexDirection: isLandscape ? 'row' : 'column', 
+      flexDirection: 'column', 
       height: '100%',
     }}>
       <div style={{ 
-        flex: isLandscape ? '1' : 'auto',
+        flex: 'auto',
         display: 'flex', 
         flexDirection: 'column', 
-        overflowY: isLandscape ? 'auto' : 'visible',
+        overflowY: 'visible',
       }}>
         <div style={{ 
           marginBottom: 'var(--spacing-md)',
@@ -299,7 +284,7 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
 
         <div style={{ 
           display: 'grid',
-          gridTemplateColumns: isLandscape ? 'repeat(auto-fill, minmax(300px, 1fr))' : '1fr',
+          gridTemplateColumns: '1fr',
           gridGap: 'var(--spacing-md)',
         }}>
           {(hasSearched ? results : recommended).map((video) => (
@@ -331,7 +316,7 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
         {loading && (
           <div style={{ 
             display: 'grid',
-            gridTemplateColumns: isLandscape ? 'repeat(auto-fill, minmax(300px, 1fr))' : '1fr',
+            gridTemplateColumns: '1fr',
             gridGap: 'var(--spacing-md)',
           }}>
             {[...Array(5)].map((_, i) => (
@@ -361,65 +346,7 @@ export function SearchTab({ onVideoSelect }: SearchTabProps) {
         </div>
       </div>
 
-      {isLandscape && currentVideo && (
-        <div style={{
-          width: '40%',
-          display: 'flex',
-          flexDirection: 'column',
-          borderLeft: '1px solid #303030',
-          paddingLeft: 'var(--spacing-md)',
-        }}>
-          <div style={{ 
-            width: '100%',
-            paddingBottom: '56.25%',
-            position: 'relative',
-            background: '#000',
-            borderRadius: 'var(--radius-sm)',
-            overflow: 'hidden',
-          }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
-              <YouTube
-                videoId={currentVideo.videoId}
-                opts={{
-                  width: '100%',
-                  height: '100%',
-                  playerVars: {
-                    autoplay: 1,
-                    mute: 1,
-                    vq: 'hd1080',
-                  },
-                }}
-                style={{ width: '100%', height: '100%' }}
-              />
-            </div>
-          </div>
-          <div style={{ padding: 'var(--spacing-md) 0' }}>
-            <h3 className="video-title">{currentVideo.title}</h3>
-            <p className="channel-name">{currentVideo.authorName}</p>
-          </div>
-          <button
-            onClick={() => {
-              triggerHaptics();
-              navigate(`/playing?id=${currentVideo.videoId}`);
-            }}
-            style={{
-              background: '#FFFFFF',
-              color: '#000000',
-              border: 'none',
-              borderRadius: 'var(--radius-md)',
-              padding: 'var(--spacing-sm) var(--spacing-md)',
-              cursor: 'pointer',
-              fontSize: 'var(--font-size-md)',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <i className="ph ph-monitor-play" style={{ fontSize: '20px', marginRight: 'var(--spacing-xs)' }}></i>
-            View Full Player</button>
-        </div>
-      )}
+
     </div>
   );
 }
