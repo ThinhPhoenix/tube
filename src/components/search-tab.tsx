@@ -18,7 +18,8 @@ const STORAGE_KEY = 'watched_videos';
 
 async function getVideoInfo(videoId: string): Promise<{ title: string; thumbnail: string; authorName?: string }> {
   try {
-    const res = await fetch(`/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    const url = `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`;
+    const res = await fetch(url);
     const data = await res.json();
     return {
       title: data.title || 'Unknown',
@@ -34,7 +35,8 @@ async function getVideoInfo(videoId: string): Promise<{ title: string; thumbnail
 }
 
 async function searchYouTube(query: string): Promise<VideoInfo[]> {
-  const response = await fetch(`/ytproxy/results?search_query=${encodeURIComponent(query)}`);
+  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+  const response = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`);
   const html = await response.text();
   
   const pattern1 = html.match(/"videoId":"[a-zA-Z0-9_-]{11}/g) || [];

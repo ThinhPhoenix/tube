@@ -19,7 +19,8 @@ interface NowPlayingTabProps {
 
 async function getVideoInfo(videoId: string): Promise<VideoInfo> {
   try {
-    const res = await fetch(`/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    const url = `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`;
+    const res = await fetch(url);
     const data = await res.json();
     return {
       videoId,
@@ -38,7 +39,8 @@ async function getVideoInfo(videoId: string): Promise<VideoInfo> {
 
 async function fetchRelatedVideos(videoId: string, page: number = 0): Promise<VideoInfo[]> {
   try {
-    const response = await fetch(`/ytproxy/watch?v=${videoId}`);
+    const url = `https://www.youtube.com/watch?v=${videoId}`;
+    const response = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`);
     const html = await response.text();
     
     const pattern1 = html.match(/"videoId":"[a-zA-Z0-9_-]{11}/g) || [];
@@ -56,13 +58,14 @@ async function fetchRelatedVideos(videoId: string, page: number = 0): Promise<Vi
     const videos: VideoInfo[] = await Promise.all(
       slicedIds.map(async (vid) => {
         try {
-          const res = await fetch(`/oembed?url=https://www.youtube.com/watch?v=${vid}&format=json`);
-          const data = await res.json();
+          const oembedUrl = `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vid}`;
+          const res = await fetch(oembedUrl);
+          const videoData = await res.json();
           return {
             videoId: vid,
-            title: data.title || 'YouTube Video',
+            title: videoData.title || 'YouTube Video',
             thumbnail: `https://img.youtube.com/vi/${vid}/hqdefault.jpg`,
-            authorName: data.author_name,
+            authorName: videoData.author_name,
           };
         } catch {
           return {
